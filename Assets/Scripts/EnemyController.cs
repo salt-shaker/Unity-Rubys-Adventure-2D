@@ -15,6 +15,10 @@ public class EnemyController : MonoBehaviour
 
     Animator animator;
 
+    public ParticleSystem smokeEffect;
+
+    public GameObject cogCollision;
+
     // Start is called before the first frame update
     void Start()
     {
@@ -71,8 +75,11 @@ public class EnemyController : MonoBehaviour
 
     public void Fix()
     {
+        GameObject cogCollisionObject = Instantiate(cogCollision, rigidbody2D.position, Quaternion.identity);
+
         broken = false;
         rigidbody2D.simulated = false;
         animator.SetTrigger("Fixed");
+        smokeEffect.Stop();
     }
 }
