@@ -18,6 +18,7 @@ public class EnemyController : MonoBehaviour
     public ParticleSystem smokeEffect;
 
     public GameObject cogCollision;
+    AudioSource walkingAudio;
 
     // Start is called before the first frame update
     void Start()
@@ -25,6 +26,7 @@ public class EnemyController : MonoBehaviour
         rigidbody2D = GetComponent<Rigidbody2D>();
         timer = changeTime;
         animator = GetComponent<Animator>();
+        walkingAudio = GetComponent<AudioSource>();
     }
 
     // Update is called once per frame
@@ -81,5 +83,6 @@ public class EnemyController : MonoBehaviour
         rigidbody2D.simulated = false;
         animator.SetTrigger("Fixed");
         smokeEffect.Stop();
+        walkingAudio.Stop();
     }
 }
