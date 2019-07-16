@@ -7,6 +7,6 @@ A 2D Unity Tutorial
 <a href="https://learn.unity.com/project/ruby-s-2d-rpg">https://learn.unity.com/project/ruby-s-2d-rpg</a>
 
 <h2>Download game on Itch.io:</h2>
-
+<a href="https://da-studios.itch.io/rubys-adventure-2d">Ruby's Adventure: 2D</a>
 
 <h2>Screen Shots:</h2>
