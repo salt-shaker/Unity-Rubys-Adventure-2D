@@ -18,7 +18,12 @@ public class EnemyController : MonoBehaviour
     public ParticleSystem smokeEffect;
 
     public GameObject cogCollision;
-    AudioSource walkingAudio;
+    AudioSource enemeyAudio;
+    public AudioClip fixAudioClip;
+
+    public GameObject questObject;
+
+    
 
     // Start is called before the first frame update
     void Start()
@@ -26,7 +31,10 @@ public class EnemyController : MonoBehaviour
         rigidbody2D = GetComponent<Rigidbody2D>();
         timer = changeTime;
         animator = GetComponent<Animator>();
-        walkingAudio = GetComponent<AudioSource>();
+        enemeyAudio = GetComponent<AudioSource>();
+
+        questObject = GameObject.Find("Quests");
+        
     }
 
     // Update is called once per frame
@@ -83,6 +91,13 @@ public class EnemyController : MonoBehaviour
         rigidbody2D.simulated = false;
         animator.SetTrigger("Fixed");
         smokeEffect.Stop();
-        walkingAudio.Stop();
+        enemeyAudio.Stop();
+        enemyOneShot(fixAudioClip);
+        questObject.GetComponent<Quests>().BotFixed();
+    }
+
+    public void enemyOneShot(AudioClip clip)
+    {
+        enemeyAudio.PlayOneShot(clip);
     }
 }

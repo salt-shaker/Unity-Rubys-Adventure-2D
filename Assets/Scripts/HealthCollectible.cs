@@ -16,7 +16,7 @@ public class HealthCollectible : MonoBehaviour
             {
                 controller.ChangeHealth(1);
                 Destroy(gameObject);
-                controller.collectibleOneShot(collectedClip);
+                controller.characterOneShot(collectedClip);
             }
         }
     }

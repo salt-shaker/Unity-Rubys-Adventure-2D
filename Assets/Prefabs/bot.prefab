@@ -17,7 +17,7 @@ GameObject:
   - component: {fileID: 4640992229074764554}
   m_Layer: 0
   m_Name: bot
-  m_TagString: Untagged
+  m_TagString: Bots
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -129,6 +129,7 @@ MonoBehaviour:
   smokeEffect: {fileID: 4574335522717387653}
   cogCollision: {fileID: 2420111000311631741, guid: 7c7dea16c41fda84a9fbc05c1ea73f1b,
     type: 3}
+  fixAudioClip: {fileID: 8300000, guid: e7fa1971a86d60945bb64585c0ac14d5, type: 3}
 --- !u!50 &4133738667131186469
 Rigidbody2D:
   serializedVersion: 4
@@ -181,7 +182,7 @@ AudioSource:
   OutputAudioMixerGroup: {fileID: 0}
   m_audioClip: {fileID: 8300000, guid: 6bfbad8ffdf387d4e87e8fa07b62f7c1, type: 3}
   m_PlayOnAwake: 1
-  m_Volume: 1
+  m_Volume: 0.75
   m_Pitch: 1
   Loop: 1
   Mute: 0

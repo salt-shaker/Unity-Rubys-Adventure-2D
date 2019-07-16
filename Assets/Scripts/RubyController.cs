@@ -1,9 +1,11 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class RubyController : MonoBehaviour
 {
+    private const string N = "walkingAudio";
     public float speed = 3.0f;
 
     public int maxHealth = 5;
@@ -21,9 +23,31 @@ public class RubyController : MonoBehaviour
 
     public GameObject projectilePrefab;
 
-    AudioSource collectibleAudio;
-    AudioSource cogThrowAudio;
+    AudioSource characterAudio;
+    
     public AudioClip cogThrowClip;
+    public AudioClip playerHitClip;
+    public AudioClip playerRunning;
+    bool startedRunning;
+    bool isRunning;
+
+    public GameObject walkingAudioObject;
+    AudioSource runningAudio;
+
+    public Image damageImage;
+    public Color damageFlashColor;
+    public float damageFlashSpeed = 0.5f;
+    bool characterDamaged = false;
+    bool characterHealed = false;
+
+    public Image healImage;
+    public Color healFlashColor;
+    public float healFlashSpeed = 0.5f;
+
+    public GameObject GameOverMenu;
+    bool gameOverState = false;
+    float horizontal;
+    float vertical;
 
     // Start is called before the first frame update
     void Start()
@@ -31,88 +55,127 @@ public class RubyController : MonoBehaviour
         rigidbody2d = GetComponent<Rigidbody2D>();
         animator = GetComponent<Animator>();
         currentHealth = maxHealth;
-        collectibleAudio = GetComponent<AudioSource>();
-        cogThrowAudio = GetComponent<AudioSource>();
+        characterAudio = GetComponent<AudioSource>();
+
+        walkingAudioObject = transform.Find(N).gameObject;
+        runningAudio = walkingAudioObject.GetComponent<AudioSource>();
     }
 
-    public void collectibleOneShot(AudioClip clip)
+    public void characterOneShot(AudioClip clip)
     {
-        collectibleAudio.PlayOneShot(clip);
-    }
-
-    public void cogThrowOneShot(AudioClip clip)
-    {
-        cogThrowAudio.PlayOneShot(clip);
+        characterAudio.PlayOneShot(clip);
     }
 
     // Update is called once per frame
     void Update()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-
-        Vector2 position = rigidbody2d.position;
-        position.x = position.x + speed * horizontal * Time.deltaTime;
-        position.y = position.y + speed * vertical * Time.deltaTime;
-
-        Vector2 move = new Vector2(horizontal, vertical);
-
-        if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
+        if (!gameOverState)
         {
-            lookDirection.Set(move.x, move.y);
-            lookDirection.Normalize();
-        }
+            horizontal = Input.GetAxis("Horizontal");
+            vertical = Input.GetAxis("Vertical");
 
-        animator.SetFloat("Look X", lookDirection.x);
-        animator.SetFloat("Look Y", lookDirection.y);
-        animator.SetFloat("Speed", move.magnitude);
 
-        position = position + move * speed * Time.deltaTime;
+            Vector2 position = rigidbody2d.position;
+            position.x = position.x + speed * horizontal * Time.deltaTime;
+            position.y = position.y + speed * vertical * Time.deltaTime;
 
-        rigidbody2d.MovePosition(position);
+            Vector2 move = new Vector2(horizontal, vertical);
 
-        if (isInvincible)
-        {
-            invincibleTimer -= Time.deltaTime;
-            if (invincibleTimer < 0)
-                isInvincible = false;
-        }
 
-        if (Input.GetKeyDown(KeyCode.C))
-        {
-            Launch();
-            cogThrowOneShot(cogThrowClip);
-        }
-
-        if (Input.GetKeyDown(KeyCode.X))
-        {
-            RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
-            if (hit.collider != null)
+            if (!Mathf.Approximately(move.x, 0.0f) || !Mathf.Approximately(move.y, 0.0f))
             {
-                NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
-                if (character != null)
+                lookDirection.Set(move.x, move.y);
+                lookDirection.Normalize();
+                startedRunning = true;
+            }
+            else if (Mathf.Approximately(move.x, 0.0f) || Mathf.Approximately(move.y, 0.0f))
+            {
+                isRunning = false;
+                startedRunning = false;
+                runningAudio.Stop();
+            }
+
+            if (startedRunning && !isRunning)
+            {
+                isRunning = true;
+                runningAudio.Play();
+            }
+
+
+            animator.SetFloat("Look X", lookDirection.x);
+            animator.SetFloat("Look Y", lookDirection.y);
+            animator.SetFloat("Speed", move.magnitude);
+
+            position = position + move * speed * Time.deltaTime;
+
+            rigidbody2d.MovePosition(position);
+
+            if (isInvincible)
+            {
+                invincibleTimer -= Time.deltaTime;
+                if (invincibleTimer < 0)
+                    isInvincible = false;
+            }
+
+            if (Input.GetKeyDown(KeyCode.C))
+            {
+                Launch();
+                characterOneShot(cogThrowClip);
+            }
+
+            if (Input.GetKeyDown(KeyCode.X))
+            {
+                RaycastHit2D hit = Physics2D.Raycast(rigidbody2d.position + Vector2.up * 0.2f, lookDirection, 1.5f, LayerMask.GetMask("NPC"));
+                if (hit.collider != null)
                 {
-                    character.DisplayDialog();
+                    NonPlayerCharacter character = hit.collider.GetComponent<NonPlayerCharacter>();
+                    if (character != null)
+                    {
+                        character.DisplayDialog();
+                    }
                 }
             }
+
+            DamagaeFlash(false);
+            HealFlash(false);
         }
     }
 
     public void ChangeHealth(int amount)
     {
-        if (amount < 0)
+        if (!gameOverState)
         {
-            if (isInvincible)
-                return;
+            if (amount < 0)
+            {
+                if (isInvincible)
+                    return;
 
-            isInvincible = true;
-            invincibleTimer = timeInvincible;
+                isInvincible = true;
+                invincibleTimer = timeInvincible;
+            }
+
+            if (amount < 0)
+            {
+                characterOneShot(playerHitClip);
+                characterDamaged = true;
+            }
+            else if (amount > 0)
+            {
+                characterHealed = true;
+            }
+
+            DamagaeFlash(characterDamaged);
+            HealFlash(characterHealed);
+
+            currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
+            UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
+
+            if (currentHealth == 0)
+            {
+                GameOverMenu.SetActive(true);
+                gameOverState = true;
+            }
         }
-
-        currentHealth = Mathf.Clamp(currentHealth + amount, 0, maxHealth);
-        UIHealthBar.instance.SetValue(currentHealth / (float)maxHealth);
-
-       // Debug.Log(currentHealth + "/" + maxHealth);
     }
 
     void Launch()
@@ -125,5 +188,31 @@ public class RubyController : MonoBehaviour
         animator.SetTrigger("Launch");
     }
 
+    void DamagaeFlash(bool damaged)
+    {
+        if (damaged)
+        {
+            damageImage.color = damageFlashColor;
+        }
+        else
+        {
+            damageImage.color = Color.Lerp(damageImage.color, Color.clear, Time.deltaTime / damageFlashSpeed);
+        }
 
+        characterDamaged = false;
+    }
+
+    void HealFlash(bool healed)
+    {
+        if (healed)
+        {
+            healImage.color = healFlashColor;
+        }
+        else
+        {
+            healImage.color = Color.Lerp(healImage.color, Color.clear, Time.deltaTime / healFlashSpeed);
+        }
+
+        characterHealed= false;
+    }
 }
